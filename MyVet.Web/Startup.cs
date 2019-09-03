@@ -55,6 +55,9 @@ namespace MyVet.Web
             services.AddTransient<SeedDb>();
             //Inyecta cada vez que lo llame y muere
             services.AddScoped<IUserHelper, UserHelper>();
+            services.AddScoped<ICombosHelper, CombosHelper>();
+            services.AddScoped<IConverterHelper, ConverterHelper>();
+            services.AddScoped<IImageHelper, ImageHelper>();
             //Inyecta una vez pero lo deja en memoria
             //services.AddSingleton<UserHelper>();
 
