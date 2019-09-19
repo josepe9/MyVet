@@ -11,6 +11,7 @@ namespace MyVet.Prism.ViewModels
 {
     public class LoginPageViewModel : ViewModelBase
     {
+        private readonly INavigationService _navigationService;
         private readonly IApiService _apiService;
 
         //El orden en las clases es:
@@ -31,7 +32,11 @@ namespace MyVet.Prism.ViewModels
         {
             Title = "Login";
             IsEnabled = true;
+            _navigationService = navigationService;
             _apiService = apiService;
+
+            Email = "jzuluaga55@hotmail.com";
+            Password = "123456";
         }
 
         public DelegateCommand LoginCommand => _loginCommand ?? (_loginCommand = new DelegateCommand(Login));
@@ -88,17 +93,40 @@ namespace MyVet.Prism.ViewModels
             //cuarto el request
             var response = await _apiService.GetTokenAsync(url, "Account", "/CreateToken", request);
 
-            IsRunning = false;
-            IsEnabled = true;
-
             if (!response.IsSuccess)
             {
+                IsRunning = false;
+                IsEnabled = true;
                 await App.Current.MainPage.DisplayAlert("Error", "Email or password incorrect.", "Accept");
                 Password = string.Empty; //limpiamos el password
                 return;
             }
 
-            await App.Current.MainPage.DisplayAlert("Ok", "fuck yeahhh!!!.", "Accept");
+            //Tomar el token  es necesario hacer un cast
+            var token = (TokenResponse)response.Result;
+            var response2 = await _apiService.GetOwnerByEmailAsync(url, "api", "/Owners/GetOwnerByEmail", "bearer", token.Token, Email);
+            if (!response2.IsSuccess)
+            {
+                IsRunning = false;
+                IsEnabled = true;
+                await App.Current.MainPage.DisplayAlert("Error", "This user have a big problem, call support.", "Accept");
+                return;
+            }
+
+            var owner = (OwnerResponse)response2.Result;
+            //pasar parámetros a la vista siguiente
+            var parameters = new NavigationParameters
+            {
+                {"owner", owner }
+            };
+
+            IsRunning = false;
+            IsEnabled = true;
+
+            Password = string.Empty;
+            //lo enviamos a la página PetsPage con los parametros del objeto owner
+            await _navigationService.NavigateAsync("PetsPage", parameters);
+//            await App.Current.MainPage.DisplayAlert("Ok", "fuck yeahhh!!!.", "Accept");
         }
 
     }
