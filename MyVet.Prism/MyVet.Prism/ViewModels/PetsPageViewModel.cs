@@ -11,11 +11,13 @@ namespace MyVet.Prism.ViewModels
 {
     public class PetsPageViewModel : ViewModelBase
     {
+        private readonly INavigationService _navigationService;
         private OwnerResponse _owner;
         private ObservableCollection<PetItemViewModel> _pets;
 
         public PetsPageViewModel(INavigationService navigationService) : base(navigationService)
         {
+            _navigationService = navigationService;
             Title = "Ptes";
         }
 
@@ -32,7 +34,7 @@ namespace MyVet.Prism.ViewModels
             if (parameters.ContainsKey("owner"))
             {
                 _owner = parameters.GetValue<OwnerResponse>("owner");
-                Pets = new ObservableCollection<PetItemViewModel>(_owner.Pets.Select(p => new PetItemViewModel
+                Pets = new ObservableCollection<PetItemViewModel>(_owner.Pets.Select(p => new PetItemViewModel(_navigationService)
                 {
                     Born = p.Born,
                     Histories = p.Histories,
